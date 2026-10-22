@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Ulul Azmi</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: #1e3c72;
+      background: linear-gradient(135deg, #112d4e, #3f72af);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .stadium-card {
+      background: #2e7d32;
+      background: radial-gradient(circle, #388e3c 0%, #1b5e20 100%);
+      border: 8px solid #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      width: 100%;
+      max-width: 750px;
+      padding: 30px;
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    /* Garis Lapangan Dekoratif */
+    .stadium-card::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.3);
+      z-index: 1;
+    }
+
+    .stadium-card::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 120px;
+      height: 120px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      z-index: 1;
+    }
+
+    .content-area {
+      position: relative;
+      z-index: 2;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+      color: #ffeb3b;
+    }
+
+    .equipment-icon {
+      font-size: 3rem;
+      margin: 10px;
+      display: inline-block;
+      animation: bounce 2s infinite alternate;
+    }
+
+    @keyframes bounce {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-10px); }
+    }
+
+    .btn {
+      background: #ff9800;
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      border-radius: 30px;
+      cursor: pointer;
+      margin: 10px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+
+    .btn:hover {
+      background: #e65100;
+      transform: scale(1.05);
+    }
+
+    .btn:disabled {
+      background: #888;
+      cursor: not-allowed;
+    }
+
+    input[type="text"] {
+      width: 80%;
+      max-width: 300px;
+      padding: 12px 15px;
+      border-radius: 10px;
+      border: 2px solid #ffeb3b;
+      margin: 10px 0;
+      font-size: 1rem;
+      text-align: center;
+      outline: none;
+    }
+
+    /* Form Mode Tanding */
+    .vs-container {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      flex-wrap: wrap;
+      margin: 15px 0;
+    }
+
+    .vs-box {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 15px;
+      border-radius: 10px;
+      margin: 5px;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    /* Tampilan Soal */
+    .scoreboard {
+      display: flex;
+      justify-content: space-between;
+      background: #111;
+      padding: 10px 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      border: 2px solid #ffeb3b;
+      font-size: 1.1rem;
+    }
+
+    .question-box {
+      background: rgba(255, 255, 255, 0.95);
+      color: #222;
+      padding: 20px;
+      border-radius: 15px;
+      margin-bottom: 20px;
+      font-weight: bold;
+      font-size: 1.2rem;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 600px) {
+      .options-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .option-btn {
+      background: #ffffff;
+      color: #222;
+      border: 3px solid #1976d2;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+    }
+
+    .option-btn:hover {
+      background: #bbdefb;
+    }
+
+    .option-btn.correct {
+      background: #4caf50 !important;
+      color: white;
+      border-color: #2e7d32;
+    }
+
+    .option-btn.wrong {
+      background: #f44336 !important;
+      color: white;
+      border-color: #c62828;
+    }
+
+    /* Screen Hiding Control */
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    .turn-indicator {
+      background: #ffeb3b;
+      color: #000;
+      padding: 5px 15px;
+      border-radius: 20px;
+      display: inline-block;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="stadium-card">
+    <div class="content-area">
+
+      <!-- HLAMAN UTAMA / MENU -->
+      <div id="home-screen" class="screen active">
+        <div>
+          <span class="equipment-icon">⚽</span>
+          <span class="equipment-icon">🏆</span>
+          <span class="equipment-icon">👟</span>
+        </div>
+        <h1>KUIS SEPAK BOLA<br><small style="color: #fff; font-size: 1.2rem;">Edisi Rasul Ulul Azmi</small></h1>
+        <p style="margin-bottom: 20px;">Pilih Mode Pertandingan untuk Mulai!</p>
+
+        <div>
+          <button class="btn" onclick="showInputName('single')">👕 Mode Tanding Tunggal (1P)</button>
+          <button class="btn" onclick="showInputName('versus')">🥊 Mode Tanding / VS (2P)</button>
+        </div>
+      </div>
+
+      <!-- HALAMAN INPUT NAMA -->
+      <div id="input-screen" class="screen">
+        <span class="equipment-icon">🎽</span>
+        <h2 id="input-title">Pengisian Nama Pemain</h2>
+        
+        <div id="single-input-group">
+          <p>Masukkan Nama Pemain:</p>
+          <input type="text" id="p1-name" placeholder="Nama Pemain 1">
+        </div>
+
+        <div id="versus-input-group" style="display: none;">
+          <div class="vs-container">
+            <div class="vs-box">
+              <h3>Tim A ⚽</h3>
+              <input type="text" id="p1-vs-name" placeholder="Nama Pemain 1">
+            </div>
+            <div style="font-size: 1.5rem; font-weight: bold; margin: 10px;">VS</div>
+            <div class="vs-box">
+              <h3>Tim B 🥅</h3>
+              <input type="text" id="p2-vs-name" placeholder="Nama Pemain 2">
+            </div>
+          </div>
+        </div>
+
+        <br>
+        <button class="btn" onclick="startGame()">Kick-off! 🚀</button>
+        <button class="btn" style="background: #666;" onclick="showHome()">Kembali</button>
+      </div>
+
+      <!-- HALAMAN PERMAINAN -->
+      <div id="game-screen" class="screen">
+        <div class="scoreboard">
+          <div id="p1-score-board">P1: 0</div>
+          <div id="timer-board">⏱️ Soal: <span id="q-num">1</span>/10</div>
+          <div id="p2-score-board" style="display:none;">P2: 0</div>
+        </div>
+
+        <div id="turn-box" class="turn-indicator" style="display:none;">
+          Giliran: <span id="current-player-turn">-</span>
+        </div>
+
+        <div class="question-box" id="question-text">
+          Pertanyaan akan muncul di sini...
+        </div>
+
+        <div class="options-grid" id="options-container">
+          <!-- Tombol Pilihan Jawaban Muncul Lewat JS -->
+        </div>
+      </div>
+
+      <!-- HALAMAN HASIL / SKOR AKHIR -->
+      <div id="result-screen" class="screen">
+        <span class="equipment-icon">🏆</span>
+        <h2>Peluit Panjang! (Hasil Akhir)</h2>
+        <div id="result-content" style="margin: 20px 0; font-size: 1.2rem; line-height: 1.8;">
+          <!-- Hasil Akhir -->
+        </div>
+        <div>
+          <button class="btn" onclick="showHome()">🏠 Kembali ke Menu</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // Data Soal tentang Rasul Ulul Azmi
+    const questions = [
+      {
+        q: "Siapakah di antara rasul berikut yang TIDAK termasuk dalam golongan Rasul Ulul Azmi?",
+        options: ["Nabi Nuh A.S.", "Nabi Ibrahim A.S.", "Nabi Yunus A.S.", "Nabi Musa A.S."],
+        answer: 2
+      },
+      {
+        q: "Mukjizat Nabi Nuh A.S. saat menghadapi banjir besar atas perintah Allah SWT adalah membuat...",
+        options: ["Tongkat Menjadi Ular", "Kapal/Bahtera Besar", "Api Menjadi Dingin", "Membelah Laut Merah"],
+        answer: 1
+      },
+      {
+        q: "Nabi Ibrahim A.S. mendapat mukjizat dari Allah SWT yaitu tidak terbakar oleh api yang dinyalakan oleh Raja...",
+        options: ["Fir'aun", "Namrud", "Jalut", "Abrahah"],
+        answer: 1
+      },
+      {
+        q: "Tongkat yang dapat membelah Laut Merah merupakan salah satu mukjizat dari...",
+        options: ["Nabi Isa A.S.", "Nabi Musa A.S.", "Nabi Muhammad SAW", "Nabi Nuh A.S."],
+        answer: 1
+      },
+      {
+        q: "Nabi Isa A.S. dikaruniai mukjizat berupa Kitab Suci...",
+        options: ["Taurat", "Zabur", "Injil", "Al-Qur'an"],
+        answer: 2
+      },
+      {
+        q: "Rasul terakhir dan penutup para nabi (Khatamul Anbiya) yang termasuk Ulul Azmi adalah...",
+        options: ["Nabi Muhammad SAW", "Nabi Adam A.S.", "Nabi Ibrahim A.S.", "Nabi Musa A.S."],
+        answer: 0
+      },
+      {
+        q: "Berapa jumlah total Rasul yang mendapat gelar Ulul Azmi?",
+        options: ["3 Rasul", "4 Rasul", "5 Rasul", "7 Rasul"],
+        answer: 2
+      },
+      {
+        q: "Gelar 'Ulul Azmi' diberikan kepada para rasul yang memiliki...",
+        options: ["Kekayaan yang melimpah", "Keteguhan hati dan ketabahan luar biasa", "Usia paling panjang", "Kerajaan yang luas"],
+        answer: 1
+      },
+      {
+        q: "Nabi Isa A.S. dapat berbicara sejak masih bayi untuk membela kesucian ibunya yang bernama...",
+        options: ["Siti Hajar", "Siti Khadijah", "Maryam", "Asiyah"],
+        answer: 2
+      },
+      {
+        q: "Mukjizat terbesar Nabi Muhammad SAW yang berlaku sepanjang masa adalah...",
+        options: ["Membelah Bulan", "Kitab Suci Al-Qur'an", "Air Keluar dari Jari", "Peristiwa Isra Mi'raj"],
+        answer: 1
+      }
+    ];
+
+    // Status Game
+    let gameMode = 'single'; // 'single' atau 'versus'
+    let player1Name = '';
+    let player2Name = '';
+    let p1Score = 0;
+    let p2Score = 0;
+    let currentQuestionIndex = 0;
+    let currentTurn = 1; // 1 untuk P1, 2 untuk P2 (Hanya untuk mode Versus)
+
+    // Navigasi Tampilan Screen
+    function showScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(screenId).classList.add('active');
+    }
+
+    function showHome() {
+      showScreen('home-screen');
+    }
+
+    function showInputName(mode) {
+      gameMode = mode;
+      document.getElementById('single-input-group').style.display = mode === 'single' ? 'block' : 'none';
+      document.getElementById('versus-input-group').style.display = mode === 'versus' ? 'block' : 'none';
+      document.getElementById('input-title').innerText = mode === 'single' ? 'Mode Tunggal (1 Player)' : 'Mode Tanding (2 Players)';
+      showScreen('input-screen');
+    }
+
+    function startGame() {
+      // Ambil nama pemain
+      if (gameMode === 'single') {
+        player1Name = document.getElementById('p1-name').value.trim() || 'Pemain 1';
+      } else {
+        player1Name = document.getElementById('p1-vs-name').value.trim() || 'Tim A';
+        player2Name = document.getElementById('p2-vs-name').value.trim() || 'Tim B';
+      }
+
+      // Reset Skor & Indikator
+      p1Score = 0;
+      p2Score = 0;
+      currentQuestionIndex = 0;
+      currentTurn = 1;
+
+      // Atur Scoreboard
+      document.getElementById('p1-score-board').innerText = `${player1Name}: 0 Poin`;
+      if (gameMode === 'versus') {
+        document.getElementById('p2-score-board').style.display = 'block';
+        document.getElementById('p2-score-board').innerText = `${player2Name}: 0 Poin`;
+        document.getElementById('turn-box').style.display = 'inline-block';
+      } else {
+        document.getElementById('p2-score-board').style.display = 'none';
+        document.getElementById('turn-box').style.display = 'none';
+      }
+
+      showScreen('game-screen');
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      if (currentQuestionIndex >= questions.length) {
+        endGame();
+        return;
+      }
+
+      const q = questions[currentQuestionIndex];
+      document.getElementById('q-num').innerText = currentQuestionIndex + 1;
+      document.getElementById('question-text').innerText = q.q;
+
+      if (gameMode === 'versus') {
+        const activePlayer = currentTurn === 1 ? player1Name : player2Name;
+        document.getElementById('current-player-turn').innerText = activePlayer;
+      }
+
+      const optionsContainer = document.getElementById('options-container');
+      optionsContainer.innerHTML = '';
+
+      q.options.forEach((opt, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerText = `${String.fromCharCode(65 + index)}. ${opt}`;
+        btn.onclick = () => checkAnswer(index, btn);
+        optionsContainer.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(selectedIndex, selectedBtn) {
+      // Disable semua tombol agar tidak diklik ganda
+      const allButtons = document.querySelectorAll('.option-btn');
+      allButtons.forEach(btn => btn.disabled = true);
+
+      const correctIndex = questions[currentQuestionIndex].answer;
+
+      if (selectedIndex === correctIndex) {
+        selectedBtn.classList.add('correct');
+        // Tambah skor gol
+        if (gameMode === 'single') {
+          p1Score += 10;
+        } else {
+          if (currentTurn === 1) p1Score += 10;
+          else p2Score += 10;
+        }
+      } else {
+        selectedBtn.classList.add('wrong');
+        // Tunjukkan jawaban yang benar (kartu merah/penalti luput)
+        allButtons[correctIndex].classList.add('correct');
+      }
+
+      // Update skor UI
+      document.getElementById('p1-score-board').innerText = `${player1Name}: ${p1Score} Poin`;
+      if (gameMode === 'versus') {
+        document.getElementById('p2-score-board').innerText = `${player2Name}: ${p2Score} Poin`;
+      }
+
+      // Berpindah ke soal berikutnya setelah delay sebentar
+      setTimeout(() => {
+        currentQuestionIndex++;
+        if (gameMode === 'versus') {
+          currentTurn = currentTurn === 1 ? 2 : 1; // Berganti giliran pemain
+        }
+        loadQuestion();
+      }, 1500);
+    }
+
+    function endGame() {
+      showScreen('result-screen');
+      const resultContent = document.getElementById('result-content');
+
+      if (gameMode === 'single') {
+        resultContent.innerHTML = `
+          <p>Peluit akhir dibunyikan!</p>
+          <h3>Pemain: <b>${player1Name}</b></h3>
+          <p style="font-size: 2rem; color: #ffeb3b; margin: 10px 0;">Total Skor: ${p1Score} Poin</p>
+          <p>${p1Score >= 70 ? '🎉 Performa Luar Biasa! Juara Sejati!' : '👍 Pertandingan Bagus! Tingkatkan Pengetahuanmu!'}</p>
+        `;
+      } else {
+        let winnerText = '';
+        if (p1Score > p2Score) {
+          winnerText = `🏆 Selamat! <b>${player1Name}</b> Menang Pertandingan!`;
+        } else if (p2Score > p1Score) {
+          winnerText = `🏆 Selamat! <b>${player2Name}</b> Menang Pertandingan!`;
+        } else {
+          winnerText = `🤝 Hasil Seri / Imbang! Pertandingan Seru!`;
+        }
+
+        resultContent.innerHTML = `
+          <h3>${winnerText}</h3>
+          <div style="margin-top: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px;">
+            <p>${player1Name}: <b>${p1Score} Poin</b></p>
+            <p>${player2Name}: <b>${p2Score} Poin</b></p>
+          </div>
+        `;
+      }
+    }
+  </script>
+</body>
+</html>
